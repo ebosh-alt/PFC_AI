@@ -1,0 +1,9 @@
+.idea
+*.iml
+out
+gen
+.venv
+/data/.env
+*.session
+*.db
+диаграмма.drawio
