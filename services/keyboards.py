@@ -56,5 +56,9 @@ class Builder:
 
 
 class Keyboards:
-    ...
+    start_kb = Builder.create_keyboard(
+        {
+            "Ссылка на проекты": "https://github.com/intovii?tab=repositories",
+        }
+    )
 
