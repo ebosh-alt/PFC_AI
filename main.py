@@ -5,8 +5,8 @@ from contextlib import suppress
 from data.config import dp, bot, ADMINS
 
 from handlers import routers
-from entity.database.base import create_async_database
-from entity.database import users, User
+from entities.database.base import create_async_database
+from entities.database import users, User
 from services import middleware
 from multiprocessing import Process
 
