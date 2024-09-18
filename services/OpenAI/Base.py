@@ -35,10 +35,10 @@ class BaseClient:
         return data
 
     async def _analysis_image(self, path_file) -> dict:
-        base64_image = self.encode_image(path_file)
+        base64_image = self.__encode_image(path_file)
         response = await self._post("https://api.openai.com/v1/chat/completions",
                                     headers=self.headers,
-                                    payload=self.payload(text=get_mes("prompt_ai"),
+                                    payload=self.__payload(text=get_mes("prompt_ai"),
                                                          base64_image=base64_image))
         return response
 
@@ -216,12 +216,12 @@ class BaseClient:
         self.client.beta.assistants.delete(ASSISTANT)
 
     @staticmethod
-    def encode_image(image_path) -> str:
+    def __encode_image(image_path) -> str:
         with open(image_path, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode('utf-8')
 
     @staticmethod
-    def payload(text: str, base64_image: str, model: str = "gpt-4o-mini") -> dict:
+    def __payload(text: str, base64_image: str, model: str = "gpt-4o-mini") -> dict:
         payload = {
             "model": model,
             "messages": [

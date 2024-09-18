@@ -11,14 +11,13 @@ from services.OpenAI import ChatGPT
 logger = logging.getLogger(__name__)
 
 
-async def main() -> None:
+async def main():
     await create_async_database()
     for router in routers:
         dp.include_router(router)
     dp.update.middleware(middleware.Logging())
     await dp.start_polling(bot)
-    # s = ChatGPT.create_assistant()
-    # print(s)
+
 
 if __name__ == "__main__":
     logging.basicConfig(
