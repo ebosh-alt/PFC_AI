@@ -24,11 +24,7 @@ async def analysis(message: Message):
         destination=path_file)
     logger.info("Downloaded file")
     await bot.send_chat_action(chat_id=id, action=ChatAction.TYPING, request_timeout=3)
-    # answer = await ChatGPT.analysis(path_file=path_file,
-    #                                 vector_store_id=user.vector_store_id,
-    #                                 user_id=id,
-    #                                 thread_id=user.thread_id)
-    answer = ChatGPT.vision(path_file)
+    answer = await ChatGPT.analysis_image(path_file)
     logger.info(f"Get answer: {answer}")
     await send_mes(id, answer)
     user.available_request -= 1

@@ -2,7 +2,7 @@ import asyncio
 import base64
 import logging
 
-import requests
+import aiohttp
 from aiogram.enums import ChatAction
 from openai import OpenAI
 from openai.pagination import SyncCursorPage
@@ -21,6 +21,26 @@ logger = logging.getLogger(__name__)
 class BaseClient:
     def __init__(self):
         self.client = OpenAI(api_key=OPENAI_API_KEY)
+        self.headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {OPENAI_API_KEY}"
+        }
+
+    @staticmethod
+    async def _post(url, headers, payload) -> dict:
+        async with aiohttp.ClientSession() as session:
+            response = await session.post(url=url, headers=headers, json=payload)
+            data = await response.json()
+            await session.close()
+        return data
+
+    async def _analysis_image(self, path_file) -> dict:
+        base64_image = self.encode_image(path_file)
+        response = await self._post("https://api.openai.com/v1/chat/completions",
+                                    headers=self.headers,
+                                    payload=self.payload(text=get_mes("prompt_ai"),
+                                                         base64_image=base64_image))
+        return response
 
     def _create_thread(self):
         thread = self.client.beta.threads.create()
@@ -192,28 +212,25 @@ class BaseClient:
         )
         return assistant.id
 
+    def _delete_assistant(self):
+        self.client.beta.assistants.delete(ASSISTANT)
+
     @staticmethod
-    def encode_image(image_path):
+    def encode_image(image_path) -> str:
         with open(image_path, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode('utf-8')
 
-    def vision(self, image_path):
-        base64_image = self.encode_image(image_path)
-
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {OPENAI_API_KEY}"
-        }
-
+    @staticmethod
+    def payload(text: str, base64_image: str, model: str = "gpt-4o-mini") -> dict:
         payload = {
-            "model": "gpt-4o-mini",
+            "model": model,
             "messages": [
                 {
                     "role": "user",
                     "content": [
                         {
                             "type": "text",
-                            "text": get_mes("prompt_AI")
+                            "text": text
                         },
                         {
                             "type": "image_url",
@@ -226,8 +243,4 @@ class BaseClient:
             ],
             "max_tokens": 300
         }
-
-        response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
-        data = response.json()
-        answer = data["choices"][0]["message"]["content"]
-        return answer
+        return payload
