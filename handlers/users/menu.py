@@ -1,3 +1,4 @@
+import datetime
 import logging
 
 from aiogram import Router
@@ -7,6 +8,7 @@ from aiogram.types import Message, CallbackQuery
 from data.config import bot
 from entities.database import users, User
 from services.GetMessage import get_mes
+from services.OpenAI import ChatGPT
 
 router = Router()
 logger = logging.getLogger(__name__)
@@ -18,13 +20,14 @@ async def start(message: Message | CallbackQuery):
     user = await users.get(id)
     free = False
     if user is None:
-        # vector_store = ChatGPT.create_vector_store(id)
-        # thread = ChatGPT.create_thread()
-
-        # vector_store_id=vector_store.id,
-        # thread_id=thread.id)
+        vector_store = ChatGPT.create_vector_store(id)
+        thread = ChatGPT.create_thread()
         await users.new(User(
-            id=id
+            id=id,
+            available_request=100,
+            expired_date_subscription=datetime.datetime.now() + datetime.timedelta(days=30),
+            vector_store_id=vector_store.id,
+            thread_id=thread.id
         ))
         user = await users.get(id)
     if user.available_request is None:

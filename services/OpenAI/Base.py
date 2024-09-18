@@ -1,6 +1,8 @@
 import asyncio
+import base64
 import logging
 
+import requests
 from aiogram.enums import ChatAction
 from openai import OpenAI
 from openai.pagination import SyncCursorPage
@@ -9,8 +11,9 @@ from openai.types.beta.threads import Run
 from openai.types.beta.threads.message_create_params import Attachment
 from openai.types.beta.vector_stores import VectorStoreFile
 
-from data.config import OPENAI_API_KEY, bot
+from data.config import OPENAI_API_KEY, bot, ASSISTANT
 from entities.database import users
+from services.GetMessage import get_mes
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +21,6 @@ logger = logging.getLogger(__name__)
 class BaseClient:
     def __init__(self):
         self.client = OpenAI(api_key=OPENAI_API_KEY)
-        self.assistant = ""
 
     def _create_thread(self):
         thread = self.client.beta.threads.create()
@@ -60,23 +62,21 @@ class BaseClient:
         return vector_store_id
 
     def _create_vector_store_file(self, vector_store_id, file_id):
-
         vector_store_file = self.client.beta.vector_stores.files.create(
             vector_store_id=vector_store_id,
             file_id=file_id
         )
-
         self._update_vector_store(vector_store_id, file_id)
         return vector_store_file
 
     def _update_vector_store(self, vector_store_id, file_id=None):
         self.client.beta.assistants.update(
-            assistant_id=self.assistant,
+            assistant_id=ASSISTANT,
             tool_resources={"file_search": {"vector_store_ids": [vector_store_id]}},
         )
         if file_id:
             self.client.beta.assistants.update(
-                assistant_id=self.assistant,
+                assistant_id=ASSISTANT,
                 tool_resources={"code_interpreter": {"file_ids": [file_id]}},
             )
 
@@ -118,7 +118,7 @@ class BaseClient:
     async def _create_run(self, thread_id, user_id) -> Run | str:
         run = self.client.beta.threads.runs.create(
             thread_id=thread_id,
-            assistant_id=self.assistant
+            assistant_id=ASSISTANT
         )
         logger.info(f"Created run: {run.id}")
         await self._retrieve_run(run, thread_id, user_id)
@@ -142,7 +142,7 @@ class BaseClient:
     def _upload_file(self, file):
         file = self.client.files.create(
             file=file,
-            purpose="assistants")
+            purpose="vision")
         logger.info(f"Uploaded file: {file.id}")
         return file
 
@@ -182,3 +182,52 @@ class BaseClient:
                 continue
             files_name.append({"filename": file.filename, "file_id": file.id})
         logger.info(f"Uploaded files to the system: {files_name}")
+
+    def _create_assistant(self):
+        assistant = self.client.beta.assistants.create(
+            instructions=get_mes("prompt_AI"),
+            name="Trainer",
+            tools=[{"type": "code_interpreter"}],
+            model="gpt-4o",
+        )
+        return assistant.id
+
+    @staticmethod
+    def encode_image(image_path):
+        with open(image_path, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode('utf-8')
+
+    def vision(self, image_path):
+        base64_image = self.encode_image(image_path)
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {OPENAI_API_KEY}"
+        }
+
+        payload = {
+            "model": "gpt-4o-mini",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": get_mes("prompt_AI")
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{base64_image}"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "max_tokens": 300
+        }
+
+        response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+        data = response.json()
+        answer = data["choices"][0]["message"]["content"]
+        return answer

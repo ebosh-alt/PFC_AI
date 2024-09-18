@@ -2,34 +2,23 @@ import asyncio
 import logging
 from contextlib import suppress
 
-from data.config import dp, bot
-
-from handlers import routers
+from data.config import bot, dp
 from entities.database.base import create_async_database
-from entities.database import users, User
+from handlers import routers
 from services import middleware
-from multiprocessing import Process
-
+from services.OpenAI import ChatGPT
 
 logger = logging.getLogger(__name__)
-
-#ФУНКЦИЯ ДОБАВЛЕНИЯ АДМИНОВ
-# async def add_admins() -> None:
-#     for adm in ADMINS:
-#         if await admins.in_(id=adm):
-#             pass
-#         else:
-#             admin = Admin(id=adm)
-#             await admins.new(admin=admin)
 
 
 async def main() -> None:
     await create_async_database()
-    # await add_admins()
     for router in routers:
         dp.include_router(router)
     dp.update.middleware(middleware.Logging())
     await dp.start_polling(bot)
+    # s = ChatGPT.create_assistant()
+    # print(s)
 
 if __name__ == "__main__":
     logging.basicConfig(

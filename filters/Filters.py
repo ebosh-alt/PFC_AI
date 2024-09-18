@@ -20,8 +20,6 @@ class ExpiredSubscription(Filter):
             await users.update(user)
             return False
         elif user.available_request > 0 and user.expired_date_subscription >= current_time:
-            user.available_request -= 1
-            await users.update(user)
             return False
         else:
             return True
