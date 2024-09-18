@@ -1,6 +1,7 @@
 import logging
 
-from service.OpenAI.Base import BaseClient
+from services.OpenAI.Base import BaseClient
+from services.GetMessage import get_mes
 
 logger = logging.getLogger(__name__)
 
@@ -14,9 +15,7 @@ class Client(BaseClient):
             self._create_vector_store_file(vector_store_id=vector_store_id,
                                            file_id=file.id)
             self._create_message(thread_id=thread_id,
-                                 content=f"Проанализируй документ."
-                                         f"Ответь на файл {file.filename} и id {file.id},"
-                                         f" это очень важно иначе работособность проекта сильно понизиться.",
+                                 content=get_mes("prompt_AI"),
                                  file_id=file.id)
         return await self.__answer(thread_id, user_id)
 

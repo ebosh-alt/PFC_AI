@@ -1,4 +1,4 @@
-from service.OpenAI.ChatGPT import Client
+from services.OpenAI.ChatGPT import Client
 
 ChatGPT = Client()
 __all__ = ['ChatGPT', ]

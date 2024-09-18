@@ -2,7 +2,7 @@ import asyncio
 import logging
 from contextlib import suppress
 
-from data.config import dp, bot, ADMINS
+from data.config import dp, bot
 
 from handlers import routers
 from entities.database.base import create_async_database

@@ -9,8 +9,8 @@ from openai.types.beta.threads import Run
 from openai.types.beta.threads.message_create_params import Attachment
 from openai.types.beta.vector_stores import VectorStoreFile
 
-from data.config import OPENAI_API_KEY, ASSISTANT, bot
-from entity.database import users
+from data.config import OPENAI_API_KEY, bot
+from entities.database import users
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 class BaseClient:
     def __init__(self):
         self.client = OpenAI(api_key=OPENAI_API_KEY)
+        self.assistant = ""
 
     def _create_thread(self):
         thread = self.client.beta.threads.create()
@@ -70,12 +71,12 @@ class BaseClient:
 
     def _update_vector_store(self, vector_store_id, file_id=None):
         self.client.beta.assistants.update(
-            assistant_id=ASSISTANT,
+            assistant_id=self.assistant,
             tool_resources={"file_search": {"vector_store_ids": [vector_store_id]}},
         )
         if file_id:
             self.client.beta.assistants.update(
-                assistant_id=ASSISTANT,
+                assistant_id=self.assistant,
                 tool_resources={"code_interpreter": {"file_ids": [file_id]}},
             )
 
@@ -117,7 +118,7 @@ class BaseClient:
     async def _create_run(self, thread_id, user_id) -> Run | str:
         run = self.client.beta.threads.runs.create(
             thread_id=thread_id,
-            assistant_id=ASSISTANT
+            assistant_id=self.assistant
         )
         logger.info(f"Created run: {run.id}")
         await self._retrieve_run(run, thread_id, user_id)

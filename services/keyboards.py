@@ -3,8 +3,6 @@ import logging
 from aiogram import types
 from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 
-from entities.database import accounts
-
 logger = logging.getLogger(__name__)
 
 
@@ -56,9 +54,8 @@ class Builder:
 
 
 class Keyboards:
-    start_kb = Builder.create_keyboard(
-        {
-            "Ссылка на проекты": "https://github.com/intovii?tab=repositories",
-        }
-    )
-
+    @staticmethod
+    async def payment_kb():
+        builder = InlineKeyboardBuilder()
+        builder.button(text=f"Оплатить 130 ⭐️",  pay=True)
+        return builder.as_markup()

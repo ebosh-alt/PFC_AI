@@ -1,8 +1,5 @@
 from aiogram import Dispatcher, Bot
-from environs import Env 
-from aiogram.enums import ParseMode
-
-
+from environs import Env
 
 env = Env()
 env.read_env()
@@ -10,5 +7,5 @@ env.read_env()
 bot_token = env('BOT_TOKEN')
 dp = Dispatcher()
 bot = Bot(bot_token)
-SQLALCHEMY_DATABASE_URL = env("SQLALCHEMY_DATABASE_URL")
-ADMINS = []
+DATABASE_URL = env("DATABASE_URL")
+OPENAI_API_KEY = env("OPENAI_API_KEY")
