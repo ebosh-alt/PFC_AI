@@ -24,7 +24,6 @@ async def start(message: Message | CallbackQuery):
         thread = ChatGPT.create_thread()
         await users.new(User(
             id=id,
-            available_request=100,
             expired_date_subscription=datetime.datetime.now() + datetime.timedelta(days=30),
             vector_store_id=vector_store.id,
             thread_id=thread.id

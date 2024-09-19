@@ -39,7 +39,7 @@ class BaseClient:
         response = await self._post("https://api.openai.com/v1/chat/completions",
                                     headers=self.headers,
                                     payload=self.__payload(text=get_mes("prompt_ai"),
-                                                         base64_image=base64_image))
+                                                           base64_image=base64_image))
         return response
 
     def _create_thread(self):
