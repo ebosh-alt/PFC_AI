@@ -38,6 +38,7 @@ async def success_payment_handler(message: Message):
     user = await users.get(id)
     user.available_request = 50
     user.expired_date_subscription = datetime.datetime.now() + datetime.timedelta(days=30)
+    await users.update(user)
     await message.answer(text=get_mes("success_payment"))
 
 
