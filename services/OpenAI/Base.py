@@ -38,7 +38,7 @@ class BaseClient:
         base64_image = self.__encode_image(path_file)
         response = await self._post("https://api.openai.com/v1/chat/completions",
                                     headers=self.headers,
-                                    payload=self.__payload(text=get_mes("prompt_ai"),
+                                    payload=self.__payload(text=get_mes("prompt_AI"),
                                                            base64_image=base64_image))
         return response
 
